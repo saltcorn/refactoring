@@ -2,6 +2,9 @@ const db = require("@saltcorn/data/db");
 const Form = require("@saltcorn/data/models/form");
 const Field = require("@saltcorn/data/models/field");
 const Table = require("@saltcorn/data/models/table");
+const View = require("@saltcorn/data/models/view");
+const Page = require("@saltcorn/data/models/page");
+const Trigger = require("@saltcorn/data/models/trigger");
 const FieldRepeat = require("@saltcorn/data/models/fieldrepeat");
 const Workflow = require("@saltcorn/data/models/workflow");
 const { eval_expression } = require("@saltcorn/data/models/expression");
@@ -50,10 +53,29 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
       fields = [
         {
           name: "table",
-          label: "Existing table",
+          label: "Table",
           type: "String",
           required: true,
           attributes: { options: tables.map((t) => t.name) },
+        },
+        {
+          name: "new_name",
+          label: "New name",
+          type: "String",
+          required: true,
+        },
+      ];
+      break;
+
+    case "Rename a view":
+      const views = await View.find({}, { cached: true });
+      fields = [
+        {
+          name: "view",
+          label: "View",
+          type: "String",
+          required: true,
+          attributes: { options: views.map((t) => t.name) },
         },
         {
           name: "new_name",
@@ -83,7 +105,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
         selector,
         span(
           { id: "trans-sel-spin", style: "display:none" },
-          i({ class: "fas fa-spinner fa-spin" }),
+          i({ class: "ms-2 fas fa-spinner fa-spin" }),
         ),
       ),
     ),
@@ -98,6 +120,21 @@ const runPost = async (
   body,
   { req, res },
 ) => {
+  const return_link = a(
+    { href: "/view/Refactoring", class: "btn btn-primary mt-3" },
+    "Return to refactoring",
+  );
+  const pack_changes = (pack) =>
+    ["tables", "views", "pages", "triggers"]
+      .map((k) =>
+        pack[k].length
+          ? div(
+              `Renamed references in the following ${k}: `,
+              pack[k].map((t) => t.name).join(","),
+            )
+          : "",
+      )
+      .join("");
   switch (body.transform) {
     case "Rename a table":
       {
@@ -107,20 +144,21 @@ const runPost = async (
         const pack = await renamer(body.table, body.new_name);
         res.sendWrap("Refactoring", [
           h4(`Renamed table "${body.table}" to "${body.new_name}"`),
-          ["tables", "views", "pages", "triggers"]
-            .map((k) =>
-              pack[k].length
-                ? div(
-                    `Renamed references in the following ${k}: `,
-                    pack[k].map((t) => t.name).join(","),
-                  )
-                : "",
-            )
-            .join(""),
-          a(
-            { href: "/view/Refactoring", class: "btn btn-primary mt-3" },
-            "Return to refactoring",
-          ),
+          pack_changes(pack),
+          return_link,
+        ]);
+      }
+      break;
+    case "Rename a view":
+      {
+        const view = await View.findOne({ name: body.view });
+        await View.update({name: body.new_name}, view.id);
+
+        const pack = await renamer(body.view, body.new_name);
+        res.sendWrap("Refactoring", [
+          h4(`Renamed view "${body.view}" to "${body.new_name}"`),
+          pack_changes(pack),
+          return_link,
         ]);
       }
       break;
