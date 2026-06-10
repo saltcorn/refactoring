@@ -84,8 +84,31 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
         ),
       ),
     ),
-    fields.length ? renderForm(form, req.csrfToken()) :"",
+    fields.length ? renderForm(form, req.csrfToken()) : "",
   );
+};
+const runPost = async (
+  table_id,
+  viewname,
+  config,
+  state,
+  body,
+  { req, res },
+) => {
+  switch (body.transform) {
+    case "Rename a table":
+      res.sendWrap("Refactoring", [
+        "Havent really renamed yet",
+        a(
+          { href: "/view/Refactoring", class: "btn btn-primary" },
+          "Return to refactoring",
+        ),
+      ]);
+      break;
+
+    default:
+      break;
+  }
 };
 
 module.exports = {
@@ -99,7 +122,7 @@ module.exports = {
       singleton: true,
       get_state_fields: () => [],
       run,
-      //runPost,
+      runPost,
       //routes: {},
     },
   ],
