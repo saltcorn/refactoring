@@ -41,35 +41,36 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
     option_("Rename a table"),
     option_("Rename a view"),
   );
-  let form;
+  let fields = [];
   switch (state.transform) {
     case "Rename a table":
       const tables = await Table.find({}, { cached: true });
-      form = new Form({
-        fields: [
-          { name: "transform", input_type: "hidden" },
-          {
-            name: "table",
-            label: "Existing table",
-            type: "String",
-            required: true,
-            attributes: { options: tables.map((t) => t.name) },
-          },
-          {
-            name: "new_name",
-            label: "New name",
-            type: "String",
-            required: true,
-          },
-        ],
-      });
-      form.values.transform = state.transform;
+      fields = [
+        {
+          name: "table",
+          label: "Existing table",
+          type: "String",
+          required: true,
+          attributes: { options: tables.map((t) => t.name) },
+        },
+        {
+          name: "new_name",
+          label: "New name",
+          type: "String",
+          required: true,
+        },
+      ];
       break;
 
     default:
       break;
   }
-  if (form) form.values.transform = state.transform;
+  const form = new Form({
+    action: "/view/Refactoring",
+    fields: [{ name: "transform", input_type: "hidden" }, ...fields],
+    values: { transform: state.transform },
+  });
+
   return div(
     div(
       { class: "row mb-3" },
@@ -83,8 +84,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
         ),
       ),
     ),
-
-    form && renderForm(form, req.csrfToken()),
+    fields.length ? renderForm(form, req.csrfToken()) :"",
   );
 };
 
