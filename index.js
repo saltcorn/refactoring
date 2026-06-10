@@ -69,6 +69,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
   }
   const form = new Form({
     action: "/view/Refactoring",
+    onSubmit: "press_store_button(this)",
     fields: [{ name: "transform", input_type: "hidden" }, ...fields],
     values: { transform: state.transform },
   });
