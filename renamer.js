@@ -2,6 +2,8 @@ const Table = require("@saltcorn/data/models/table");
 const View = require("@saltcorn/data/models/view");
 const Page = require("@saltcorn/data/models/page");
 const Trigger = require("@saltcorn/data/models/trigger");
+const db = require("@saltcorn/data/db");
+const { getState } = require("@saltcorn/data/db/state");
 
 const {
   table_pack,

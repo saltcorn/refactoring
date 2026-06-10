@@ -10,6 +10,7 @@ const {
   text,
   div,
   h5,
+  h4,
   style,
   a,
   script,
@@ -23,7 +24,7 @@ const {
 } = require("@saltcorn/markup/tags");
 const { mkTable, renderForm } = require("@saltcorn/markup");
 const { readState } = require("@saltcorn/data/plugin-helper");
-const { features } = require("@saltcorn/data/db/state");
+const { features, getState } = require("@saltcorn/data/db/state");
 const { renamer } = require("./renamer");
 
 const run = async (table_id, viewname, cfg, state, { res, req }) => {
@@ -109,14 +110,14 @@ const runPost = async (
             .map((k) =>
               pack[k].length
                 ? div(
-                    `Renamed references in the following ${k}:`,
-                    pack[k].map((t) => t.name),
+                    `Renamed references in the following ${k}: `,
+                    pack[k].map((t) => t.name).join(","),
                   )
                 : "",
             )
             .join(""),
           a(
-            { href: "/view/Refactoring", class: "btn btn-primary" },
+            { href: "/view/Refactoring", class: "btn btn-primary mt-3" },
             "Return to refactoring",
           ),
         ]);
