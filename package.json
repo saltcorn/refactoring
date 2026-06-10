@@ -1,0 +1,35 @@
+{
+  "name": "@saltcorn/refactoring",
+  "version": "0.1.0",
+  "description": "Refactoring your Saltcorn application",
+  "main": "index.js",
+  "dependencies": {
+    "@saltcorn/markup": "^1.4.0",
+    "@saltcorn/data": "^1.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "jest tests --runInBand"
+  },
+  "author": "Tom Nielsen",
+  "license": "MIT",
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": 2022
+    },
+    "env": {
+      "node": true,
+      "es6": true,
+      "jest/globals": true
+    },
+    "rules": {
+      "no-unused-vars": "off",
+      "no-case-declarations": "off",
+      "no-empty": "warn",
+      "no-fallthrough": "warn"
+    }
+  }
+}
