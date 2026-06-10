@@ -24,6 +24,7 @@ const {
 const { mkTable, renderForm } = require("@saltcorn/markup");
 const { readState } = require("@saltcorn/data/plugin-helper");
 const { features } = require("@saltcorn/data/db/state");
+const { renamer } = require("./renamer");
 
 const run = async (table_id, viewname, cfg, state, { res, req }) => {
   const option_ = (s) => option({ selected: state.transform == s }, s);
@@ -97,13 +98,29 @@ const runPost = async (
 ) => {
   switch (body.transform) {
     case "Rename a table":
-      res.sendWrap("Refactoring", [
-        "Havent really renamed yet",
-        a(
-          { href: "/view/Refactoring", class: "btn btn-primary" },
-          "Return to refactoring",
-        ),
-      ]);
+      {
+        const table = Table.findOne({ name: body.table });
+        await table.rename(body.new_name);
+
+        const pack = await renamer(body.table, body.new_name);
+        res.sendWrap("Refactoring", [
+          h4(`Renamed table "${body.table}" to "${body.new_name}"`),
+          ["tables", "views", "pages", "triggers"]
+            .map((k) =>
+              pack[k].length
+                ? div(
+                    `Renamed references in the following ${k}:`,
+                    pack[k].map((t) => t.name),
+                  )
+                : "",
+            )
+            .join(""),
+          a(
+            { href: "/view/Refactoring", class: "btn btn-primary" },
+            "Return to refactoring",
+          ),
+        ]);
+      }
       break;
 
     default:

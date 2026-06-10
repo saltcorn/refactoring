@@ -64,6 +64,7 @@ const renamer = async (old_name, new_name) => {
   if (pack.views.length) await getState().refresh_views();
   if (pack.pages.length) await getState().refresh_pages();
   if (pack.triggers.length) await getState().refresh_triggers();
+  return pack;
 };
 
 module.exports = { renamer };
