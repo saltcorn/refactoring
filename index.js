@@ -48,7 +48,10 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
     option_("Rename a view"),
     option_("Dead entity elimination"),
   );
-  let fields = [];
+  let fields = [],
+    blurb,
+    labelCols,
+    submitLabel = "Change";
   switch (state.transform) {
     case "Rename a table":
       const tables = await Table.find({}, { cached: true });
@@ -94,18 +97,23 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
           [...dead_names[entType]].map((entName) => ({
             name: `${entType}_${entName}`,
             label: entName,
-            sublabel: entType,
+            sublabel: entType.slice(0, -1),
             type: "Bool",
           })),
         )
         .flat(1);
-
+      labelCols = 4;
+      submitLabel = "Delete";
+      blurb = `These entities had no detectable connection to the entrypoints of your application, but they may be connected in some other way. Verify before deleting.`;
     default:
       break;
   }
   const form = new Form({
     action: "/view/Refactoring",
     onSubmit: "press_store_button(this)",
+    submitLabel,
+    labelCols,
+    blurb,
     fields: [{ name: "transform", input_type: "hidden" }, ...fields],
     values: { transform: state.transform },
   });
@@ -154,7 +162,7 @@ const runPost = async (
       {
         const table = Table.findOne({ name: body.table });
         await table.rename(body.new_name);
-
+        await getState().refresh_pages();
         const pack = await renamer(body.table, body.new_name);
         res.sendWrap("Refactoring", [
           h4(`Renamed table "${body.table}" to "${body.new_name}"`),
@@ -167,7 +175,7 @@ const runPost = async (
       {
         const view = await View.findOne({ name: body.view });
         await View.update({ name: body.new_name }, view.id);
-
+        await getState().refresh_views();
         const pack = await renamer(body.view, body.new_name);
         res.sendWrap("Refactoring", [
           h4(`Renamed view "${body.view}" to "${body.new_name}"`),
@@ -176,7 +184,22 @@ const runPost = async (
         ]);
       }
       break;
-
+    case "Dead entity elimination":
+      const dead_names = await detect_dead_entities();
+      
+      for (const name of dead_names.triggers)        
+        if (body[`triggers_${name}`]) await Trigger.findOne({ name }).delete();
+      for (const name of dead_names.pages)
+        if (body[`pages_${name}`]) await Page.findOne({ name }).delete();
+      for (const name of dead_names.views)
+        if (body[`views_${name}`]) await View.findOne({ name }).delete();
+      for (const name of dead_names.tables)
+        if (body[`tables_${name}`]) await Table.findOne({ name }).delete();
+      await getState().refresh_tables();
+      await getState().refresh_views();
+      await getState().refresh_pages();
+      await getState().refresh_triggers();
+      res.redirect("/view/Refactoring");
     default:
       break;
   }
