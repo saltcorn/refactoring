@@ -29,6 +29,7 @@ const { mkTable, renderForm } = require("@saltcorn/markup");
 const { readState } = require("@saltcorn/data/plugin-helper");
 const { features, getState } = require("@saltcorn/data/db/state");
 const { renamer } = require("./renamer");
+const { detect_dead_entities } = require("./dead-entity-detector");
 
 const run = async (table_id, viewname, cfg, state, { res, req }) => {
   const option_ = (s) => option({ selected: state.transform == s }, s);
@@ -45,6 +46,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
     ),
     option_("Rename a table"),
     option_("Rename a view"),
+    option_("Dead entity elimination"),
   );
   let fields = [];
   switch (state.transform) {
@@ -85,6 +87,18 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
         },
       ];
       break;
+    case "Dead entity elimination":
+      const dead_names = await detect_dead_entities();
+      fields = ["tables", "views", "pages", "triggers"]
+        .map((entType) =>
+          [...dead_names[entType]].map((entName) => ({
+            name: `${entType}_${entName}`,
+            label: entName,
+            sublabel: entType,
+            type: "Bool",
+          })),
+        )
+        .flat(1);
 
     default:
       break;
@@ -152,7 +166,7 @@ const runPost = async (
     case "Rename a view":
       {
         const view = await View.findOne({ name: body.view });
-        await View.update({name: body.new_name}, view.id);
+        await View.update({ name: body.new_name }, view.id);
 
         const pack = await renamer(body.view, body.new_name);
         res.sendWrap("Refactoring", [
