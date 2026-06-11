@@ -102,10 +102,20 @@ const detect_dead_entities = async () => {
         const isInLivePack = livepackStr.includes(`"${entName}"`);
         const isViewLinked =
           entType === "views" && livepackStr.includes(`:${entName}"`);
+        const isViewInURL =
+          entType === "views" &&
+          (livepackStr.includes(`/view/${entName}"`) ||
+            livepackStr.includes(`/view/${encodeURIComponent(entName)}"`));
         const isAggRelation =
           entType === "tables" &&
           livepackStr.includes(`agg_relation":"${entName}.`);
-        if (isInLivePack || isViewLinked || isTableTrigger || isAggRelation) {
+        if (
+          isInLivePack ||
+          isViewLinked ||
+          isTableTrigger ||
+          isAggRelation ||
+          isViewInURL
+        ) {
           unknown[entType].delete(entName);
           live[entType].add(entName);
           changed = true;
