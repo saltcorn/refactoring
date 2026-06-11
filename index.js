@@ -51,7 +51,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
   let fields = [],
     blurb,
     labelCols,
-    submitLabel = "Change";
+    submitLabel = "Change", extra_html="";
   switch (state.transform) {
     case "Rename a table":
       const tables = await Table.find({}, { cached: true });
@@ -105,6 +105,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
       labelCols = 4;
       submitLabel = "Delete";
       blurb = `These entities had no detectable connection to the entrypoints of your application, but they may be connected in some other way. Verify before deleting.`;
+      if(!fields.length) extra_html = "No dead entities found"
     default:
       break;
   }
@@ -132,6 +133,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
       ),
     ),
     fields.length ? renderForm(form, req.csrfToken()) : "",
+    extra_html
   );
 };
 const runPost = async (

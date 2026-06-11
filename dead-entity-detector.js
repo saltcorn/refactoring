@@ -99,7 +99,11 @@ const detect_dead_entities = async () => {
             packs.triggers[entName].when_trigger,
           ) &&
           live.tables.has(packs.triggers[entName].table_name);
-        if (livepackStr.includes(`"${entName}"`) || isTableTrigger) {
+        if (
+          livepackStr.includes(`"${entName}"`) ||
+          (entType === "views" && livepackStr.includes(`:${entName}"`)) ||
+          isTableTrigger
+        ) {
           unknown[entType].delete(entName);
           live[entType].add(entName);
           changed = true;
