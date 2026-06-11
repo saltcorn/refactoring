@@ -35,9 +35,11 @@ const detect_dead_entities = async () => {
     else unknown.tables.add(table.name);
   }
 
-  const menu_items = JSON.stringify(getState().getConfig("menu_items", false));
+  const menu_items = JSON.stringify(
+    getState().getConfig("menu_items", false) || "",
+  );
   const search_settings = JSON.stringify(
-    getState().getConfig("globalSearch", false),
+    getState().getConfig("globalSearch", "") || "",
   );
 
   for (const view of full_pack.views) {
@@ -51,7 +53,7 @@ const detect_dead_entities = async () => {
   }
 
   const home_page_by_role = JSON.stringify(
-    getState().getConfig("home_page_by_role", false),
+    getState().getConfig("home_page_by_role", "") || "",
   );
 
   for (const page of full_pack.pages) {
