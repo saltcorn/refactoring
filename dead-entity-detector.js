@@ -36,10 +36,17 @@ const detect_dead_entities = async () => {
   }
 
   const menu_items = JSON.stringify(getState().getConfig("menu_items", false));
+  const search_settings = JSON.stringify(
+    getState().getConfig("globalSearch", false),
+  );
 
   for (const view of full_pack.views) {
     packs.views[view.name] = view;
-    if (menu_items.includes(`"${view.name}"`)) live.views.add(view.name);
+    if (
+      menu_items.includes(`"${view.name}"`) ||
+      search_settings.includes(`"${view.name}"`)
+    )
+      live.views.add(view.name);
     else unknown.views.add(view.name);
   }
 
