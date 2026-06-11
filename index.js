@@ -51,7 +51,8 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
   let fields = [],
     blurb,
     labelCols,
-    submitLabel = "Change", extra_html="";
+    submitLabel = "Change",
+    extra_html = "";
   switch (state.transform) {
     case "Rename a table":
       const tables = await Table.find({}, { cached: true });
@@ -105,7 +106,7 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
       labelCols = 4;
       submitLabel = "Delete";
       blurb = `These entities had no detectable connection to the entrypoints of your application, but they may be connected in some other way. Verify before deleting.`;
-      if(!fields.length) extra_html = "No dead entities found"
+      if (!fields.length) extra_html = "No dead entities found";
     default:
       break;
   }
@@ -133,9 +134,17 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
       ),
     ),
     fields.length ? renderForm(form, req.csrfToken()) : "",
-    extra_html
+    inRow(extra_html),
   );
 };
+
+const inRow = (right, left = "") =>
+  div(
+    { class: "row mb-3" },
+    div({ class: "col-sm-2 text-md-end" }, left),
+    div({ class: "col-sm-10" }, right),
+  );
+
 const runPost = async (
   table_id,
   viewname,
@@ -188,8 +197,8 @@ const runPost = async (
       break;
     case "Dead entity elimination":
       const dead_names = await detect_dead_entities();
-      
-      for (const name of dead_names.triggers)        
+
+      for (const name of dead_names.triggers)
         if (body[`triggers_${name}`]) await Trigger.findOne({ name }).delete();
       for (const name of dead_names.pages)
         if (body[`pages_${name}`]) await Page.findOne({ name }).delete();
