@@ -122,14 +122,17 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
 
   return div(
     div(
-      { class: "row mb-3" },
-      div({ class: "col-sm-2 text-md-end" }, "Transform"),
+      { class: "border-bottom mb-3" },
       div(
-        { class: "col-sm-10" },
-        selector,
-        span(
-          { id: "trans-sel-spin", style: "display:none" },
-          i({ class: "ms-2 fas fa-spinner fa-spin" }),
+        { class: "row mb-3" },
+        div({ class: "col-sm-2 text-md-end" }, "Transform"),
+        div(
+          { class: "col-sm-10" },
+          selector,
+          span(
+            { id: "trans-sel-spin", style: "display:none" },
+            i({ class: "ms-2 fas fa-spinner fa-spin" }),
+          ),
         ),
       ),
     ),
