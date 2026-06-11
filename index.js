@@ -98,7 +98,16 @@ const run = async (table_id, viewname, cfg, state, { res, req }) => {
           [...dead_names[entType]].map((entName) => ({
             name: `${entType}_${entName}`,
             label: entName,
-            sublabel: entType.slice(0, -1),
+            sublabel: span(
+              entType.slice(0, -1),
+              a(
+                {
+                  href: `/registry-editor?q=${encodeURIComponent(entName)}`,
+                  title: "Show in Registry Editor",
+                },
+                i({ class: "ms-2 fas fa-list" }),
+              ),
+            ),
             type: "Bool",
           })),
         )
